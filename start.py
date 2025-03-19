@@ -171,6 +171,6 @@ async def handle_message(message: Message):
                         await clients[str(i.text)].send_text(json.dumps(data))
                         print(f"🚀 Данные text на терминал {i.text}: {data}")
                     except Exception as e:
-                        print(f"⚠ Ошибка district_idпри отправке данных на терминал {i.text}: {e}")
+                        print(f"⚠ Ошибка district_id при отправке данных на терминал {i.text}: {e}")
                 else:
                     print(f"❌ Терминал {i.text} не подключен!")
