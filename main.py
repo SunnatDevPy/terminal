@@ -59,6 +59,8 @@ app = FastAPI()
 # === 4. ОБРАБОТКА WEBSOCKET ===
 @app.websocket("/ws/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
+    print(device_id)
+    print(websocket)
     await websocket.accept()
     clients[device_id] = websocket
     print(f"📡 Устройство {device_id} подключилось")
