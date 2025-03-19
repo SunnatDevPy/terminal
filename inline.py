@@ -56,6 +56,7 @@ async def districts_btn():
     ikb.adjust(1)
     return ikb.as_markup()
 
+
 async def districts_from_btn():
     ikb = InlineKeyboardBuilder()
     checks = await District.all()

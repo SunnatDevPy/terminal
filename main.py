@@ -1,13 +1,10 @@
-import json
-
-import uvicorn
 from fastapi import FastAPI
 from starlette.websockets import WebSocket
 
-from bot import bot
-from config import clients
-
 app = FastAPI()
+import redis
+
+r = redis.Redis(host='localhost', port=6379, db=0)
 
 
 # === 4. ОБРАБОТКА WEBSOCKET ===
@@ -21,8 +18,6 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
         while True:
             message = await websocket.receive_text()
             print(f"📩 Получено от {device_id}: {message}")
-
-            from aiogram.utils import executor
 
             await bot.send_message(chat_id=5649321700, text=f"Сообщение от {device_id}: {message}")
 
@@ -46,7 +41,6 @@ async def webhook(data: dict):
 
 import json
 
-import uvicorn
 from fastapi import FastAPI
 from starlette.websockets import WebSocket
 
