@@ -5,7 +5,7 @@ from aiogram.enums import ChatType
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, CallbackQuery, Chat
+from aiogram.types import Message, CallbackQuery
 
 from config import clients
 from inline import menu, checks_btn, district_btn, districts_btn, districts_from_btn
@@ -157,6 +157,7 @@ async def command_start(message: Message, state: FSMContext):
 async def handle_message(message: Message):
     text = message.text.lower()
     print(text)
+
     checks: list["Check"] = await Check.all()
     for i in checks:
         if i.group_id == message.chat.id:
@@ -165,8 +166,11 @@ async def handle_message(message: Message):
                                      district=i.district)
                 data = {"device_id": str(i.text), "action": "PAYMENT", "amount": i.text}
 
-                if str(i.district_id) in clients:
-                    await clients[str(i.district_id)].send_text(json.dumps(data))
-                    print(f"🚀 Данные отправлены на терминал {i.district_id}: {data}")
+                if str(i.text) in clients:
+                    try:
+                        await clients[str(i.district_id)].send_text(json.dumps(data))
+                        print(f"🚀 Данные text на терминал {i.text}: {data}")
+                    except Exception as e:
+                        print(f"⚠ Ошибка при отправке данных на терминал {i.text}: {e}")
                 else:
-                    print(f"❌ Терминал {i.district_id} не подключен!")
+                    print(f"❌ Терминал {i.text} не подключен!")
