@@ -63,6 +63,7 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
     print(websocket)
     await websocket.accept()
     clients[device_id] = websocket
+    print(clients)
     print(f"📡 Устройство {device_id} подключилось")
 
     try:
