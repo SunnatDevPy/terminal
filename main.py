@@ -21,7 +21,10 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
 
     except:
         print(f"❌ Устройство {device_id} отключилось")
-        del clients[device_id]
+        try:
+            del clients[device_id]
+        except:
+            print("Hatolik")
 
 
 @app.post("/webhook")

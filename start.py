@@ -168,9 +168,9 @@ async def handle_message(message: Message):
 
                 if str(i.text) in clients:
                     try:
-                        await clients[str(i.district_id)].send_text(json.dumps(data))
+                        await clients[str(i.text)].send_text(json.dumps(data))
                         print(f"🚀 Данные text на терминал {i.text}: {data}")
                     except Exception as e:
-                        print(f"⚠ Ошибка при отправке данных на терминал {i.text}: {e}")
+                        print(f"⚠ Ошибка district_idпри отправке данных на терминал {i.text}: {e}")
                 else:
                     print(f"❌ Терминал {i.text} не подключен!")
