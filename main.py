@@ -2,9 +2,7 @@ from fastapi import FastAPI
 from starlette.websockets import WebSocket
 
 app = FastAPI()
-import redis
 
-r = redis.Redis(host='localhost', port=6379, db=0)
 
 
 # === 4. ОБРАБОТКА WEBSOCKET ===
