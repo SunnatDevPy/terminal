@@ -1,14 +1,15 @@
 from fastapi import FastAPI
-from starlette.websockets import WebSocket
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 app = FastAPI()
-
 
 
 # === 4. ОБРАБОТКА WEBSOCKET ===
 @app.websocket("/ws/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
     await websocket.accept()
+
+    # Добавляем устройство в список клиентов
     clients[device_id] = websocket
     print(f"📡 Устройство {device_id} подключилось")
 
@@ -19,12 +20,9 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
 
             await bot.send_message(chat_id=5649321700, text=f"Сообщение от {device_id}: {message}")
 
-    except:
+    except WebSocketDisconnect:
         print(f"❌ Устройство {device_id} отключилось")
-        try:
-            del clients[device_id]
-        except:
-            print("Hatolik")
+        clients.pop(device_id, None)
 
 
 @app.post("/webhook")
