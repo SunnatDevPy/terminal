@@ -155,13 +155,13 @@ async def command_start(message: Message, state: FSMContext):
 
 @start_router.message(lambda message: message.chat.type in {ChatType.GROUP, ChatType.SUPERGROUP})
 async def handle_message(message: Message):
-    text = message.text.lower()
+    text = message.text
     print(text)
-
+    print(clients)
     checks: list["Check"] = await Check.all()
     for i in checks:
         if i.group_id == message.chat.id:
-            if i.text.lower() in text:
+            if i.text in text:
                 await Tickets.create(text=message.text, check=i.text, check_id=i.id, district_id=i.district_id,
                                      district=i.district)
                 data = {"device_id": str(i.text), "action": "PAYMENT", "amount": i.text}
