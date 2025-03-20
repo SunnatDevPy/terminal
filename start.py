@@ -80,7 +80,7 @@ async def command_start(call: CallbackQuery, state: FSMContext):
     elif data[1] == 'add':
         await call.message.delete()
         await state.set_state(TextState.text)
-        await call.message.answer("Yangi chiq devays nomini kiriting ⚠")
+        await call.message.answer("Yangi chip devays nomini kiriting ⚠")
     elif data[1] == 'back':
         try:
             await call.message.edit_text("Bosh menu", reply_markup=menu())
@@ -101,10 +101,7 @@ async def command_start(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
     res = await state.get_data()
     print(res)
-    await Check.create(device=res.get('device'), owner_name=res.get('owner_name'),
-                       acceptance_group_id=int(res.get('acceptance_group_id')),
-                       send_group_id=int(res.get('send_group_id')), district_id=int(data[1]),
-                       district=data[-1])
+    await Check.create(device=res.get('device'), district_id=int(data[1]), district=data[-1])
     await state.clear()
     await call.message.answer("Chek yaratildi", reply_markup=await checks_btn())
 
