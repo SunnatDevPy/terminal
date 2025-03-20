@@ -166,13 +166,13 @@ async def handle_message(message: Message, bot: Bot):
     # for group in bank_groups:
     for check in checks:
         if check.device in text:
-            await Tickets.create(
-                text=message.text,
-                check=check.device,
-                check_id=check.id,
-                district_id=check.district_id,
-                district=check.district
-            )
+            # await Tickets.create(
+            #     text=message.text,
+            #     check=check.device,
+            #     check_id=check.id,
+            #     district_id=check.district_id,
+            #     district=check.district
+            # )
             data = {"device_id": check.device, "action": "PAYMENT", "amount": check.device}
             print("Формируем данные для отправки на устройство:", data)
             if check.device in clients:
