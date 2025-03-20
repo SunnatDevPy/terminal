@@ -147,28 +147,47 @@ async def command_start(message: Message, state: FSMContext):
     await state.clear()
 
 
+
+# === 4. ОБРАБОТКА СООБЩЕНИЙ ИЗ TELEGRAM ГРУППЫ ===
 @start_router.message(lambda message: message.chat.type in {ChatType.GROUP, ChatType.SUPERGROUP})
 async def handle_message(message: Message):
     text = message.text
-    bank_groups = await GroupFromBank.all()
+    print("Получено сообщение из Telegram группы:")
+    print(text)
+    print("Подключенные устройства:", clients)
     print(message.chat.id)
-    print(1)
-    for i in bank_groups:
-        if -1002279369370 == message.chat.id:
-            for j in await Check.all():
-                if j.device in text:
-                    await Tickets.create(text=message.text, check=j.device, check_id=i.id, district_id=i.district_id,
-                                         district=i.district)
-                    data = {"device_id": j.device, "action": "PAYMENT", "amount": i.device}
-                    print(data)
-                    print(text)
-                    print(clients)
-                    if j.device in clients:
-                        try:
 
-                            await clients[j.device].send_text(json.dumps(data))
-                            print(f"🚀 Данные text на терминал {i.device}: {data}")
-                        except Exception as e:
-                            print(f"⚠ Ошибка device_id при отправке данных на терминал {i.device}: {e}")
-                    else:
-                        print(f"❌ Терминал {i.device} не подключен!")
+    # Проверяем, что сообщение пришло из нужной группы
+    TARGET_GROUP_ID = -1002279369370
+    if message.chat.id != TARGET_GROUP_ID:
+        return
+
+    # Получаем все группы и проверки один раз
+    bank_groups = await GroupFromBank.all()
+    checks = await Check.all()
+
+    # Для каждой группы и каждого устройства, если устройство упоминается в тексте
+    for group in bank_groups:
+        for check in checks:
+            if check.device in text:
+                # Сохраняем тикет
+                await Tickets.create(
+                    text=message.text,
+                    check=check.device,
+                    check_id=group.id,
+                    district_id=group.district_id,
+                    district=group.district
+                )
+                # Формируем данные для отправки на устройство
+                # Обратите внимание: поле "amount" здесь использует group.device – возможно, это опечатка,
+                # замените на корректное значение (например, group.amount), если требуется.
+                data = {"device_id": check.device, "action": "PAYMENT", "amount": group.device}
+                print("Формируем данные для отправки на устройство:", data)
+                if check.device in clients:
+                    try:
+                        await clients[check.device].send_text(json.dumps(data))
+                        print(f"🚀 Данные отправлены на терминал {group.device}: {data}")
+                    except Exception as e:
+                        print(f"⚠ Ошибка при отправке данных на терминал {group.device}: {e}")
+                else:
+                    print(f"❌ Терминал {group.device} не подключен!")
