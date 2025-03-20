@@ -6,95 +6,97 @@ from models.users import District, BankName, GroupFromBank
 
 
 def menu():
-    ikb = InlineKeyboardBuilder()
-    ikb.add(*[
-        InlineKeyboardButton(text="Textlar", callback_data='admin_text'),
-        InlineKeyboardButton(text="Check Chip textlar", callback_data='admin_check'),
-        InlineKeyboardButton(text="Tumanlar", callback_data='admin_district'),
-        InlineKeyboardButton(text="Banklar", callback_data='admin_bank')
-    ])
-    ikb.adjust(1)
-    return ikb.as_markup()
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        InlineKeyboardButton(text="Textlar", callback_data="admin_text"),
+        InlineKeyboardButton(text="Check Chip textlar", callback_data="admin_check"),
+        InlineKeyboardButton(text="Tumanlar", callback_data="admin_district"),
+        InlineKeyboardButton(text="Banklar", callback_data="admin_bank")
+    )
+    # Упорядочиваем кнопки по одной в ряду
+    builder.adjust(1)
+    return builder.as_markup()
 
 
 async def checks_btn():
-    ikb = InlineKeyboardBuilder()
+    builder = InlineKeyboardBuilder()
     checks = await Check.all()
     if checks:
-        for i in checks:
-            ikb.add(*[
-                InlineKeyboardButton(text=i.device, callback_data=f'check_text_{i.id}'),
-                InlineKeyboardButton(text="❌", callback_data=f'check_delete_{i.id}'),
-            ])
-    ikb.row(InlineKeyboardButton(text="Check qo'shish", callback_data=f'check_add'))
-    ikb.row(InlineKeyboardButton(text="Ortga", callback_data=f'check_back'))
-    ikb.adjust(2)
-    return ikb.as_markup()
+        for check in checks:
+            builder.add(
+                InlineKeyboardButton(text=check.device, callback_data=f"check_text_{check.id}"),
+                InlineKeyboardButton(text="❌", callback_data=f"check_delete_{check.id}")
+            )
+    # Добавляем кнопки управления
+    builder.row(InlineKeyboardButton(text="Check qo'shish", callback_data="check_add"))
+    builder.row(InlineKeyboardButton(text="Ortga", callback_data="check_back"))
+    builder.adjust(2)
+    return builder.as_markup()
 
 
 async def district_btn():
-    ikb = InlineKeyboardBuilder()
-    checks = await District.all()
-    if checks:
-        for i in checks:
-            ikb.add(*[
-                InlineKeyboardButton(text=i.name, callback_data=f'district_text_{i.id}'),
-                InlineKeyboardButton(text="❌", callback_data=f'district_delete_{i.id}'),
-            ])
-    ikb.row(InlineKeyboardButton(text="Tuman qo'shish", callback_data=f'district_add'))
-    ikb.row(InlineKeyboardButton(text="Ortga", callback_data=f'district_back'))
-    ikb.adjust(2)
-    return ikb.as_markup()
+    builder = InlineKeyboardBuilder()
+    districts = await District.all()
+    if districts:
+        for district in districts:
+            builder.add(
+                InlineKeyboardButton(text=district.name, callback_data=f"district_text_{district.id}"),
+                InlineKeyboardButton(text="❌", callback_data=f"district_delete_{district.id}")
+            )
+    builder.row(InlineKeyboardButton(text="Tuman qo'shish", callback_data="district_add"))
+    builder.row(InlineKeyboardButton(text="Ortga", callback_data="district_back"))
+    builder.adjust(2)
+    return builder.as_markup()
 
 
 async def bank_btn():
-    ikb = InlineKeyboardBuilder()
-    checks = await BankName.all()
-    if checks:
-        for i in checks:
-            ikb.add(*[
-                InlineKeyboardButton(text=i.name, callback_data=f'bank_text_{i.id}_{i.name}'),
-                InlineKeyboardButton(text="❌", callback_data=f'bank_delete_{i.id}'),
-            ])
-    ikb.row(InlineKeyboardButton(text="Bank qo'shish", callback_data=f'bank_add'))
-    ikb.row(InlineKeyboardButton(text="Ortga", callback_data=f'bank_back'))
-    ikb.adjust(2)
-    return ikb.as_markup()
+    builder = InlineKeyboardBuilder()
+    banks = await BankName.all()
+    if banks:
+        for bank in banks:
+            builder.add(
+                InlineKeyboardButton(text=bank.name, callback_data=f"bank_text_{bank.id}_{bank.name}"),
+                InlineKeyboardButton(text="❌", callback_data=f"bank_delete_{bank.id}")
+            )
+    builder.row(InlineKeyboardButton(text="Bank qo'shish", callback_data="bank_add"))
+    builder.row(InlineKeyboardButton(text="Ortga", callback_data="bank_back"))
+    builder.adjust(2)
+    return builder.as_markup()
 
 
-async def bank_group_btn(bank_id):
-    ikb = InlineKeyboardBuilder()
-    checks = await GroupFromBank.filter(GroupFromBank.bank_id == bank_id)
-    if checks:
-        for i in checks:
-            ikb.add(*[
-                InlineKeyboardButton(text=i.bank_name, callback_data=f'group_text_{i.id}'),
-                InlineKeyboardButton(text=i.group_id, callback_data=f'group_text_{i.id}'),
-                InlineKeyboardButton(text="❌", callback_data=f'group_delete_{i.id}'),
-            ])
-    ikb.row(InlineKeyboardButton(text=f"Gurux qo'shish", callback_data=f'group_add'))
-    ikb.row(InlineKeyboardButton(text="Ortga", callback_data=f'group_back'))
-    ikb.adjust(3)
-    return ikb.as_markup()
+async def bank_group_btn(bank_id: int):
+    builder = InlineKeyboardBuilder()
+    groups = await GroupFromBank.filter(GroupFromBank.bank_id == bank_id)
+    if groups:
+        for group in groups:
+            builder.add(
+                InlineKeyboardButton(text=group.bank_name, callback_data=f"group_text_{group.id}"),
+                InlineKeyboardButton(text=str(group.group_id), callback_data=f"group_text_{group.id}"),
+                InlineKeyboardButton(text="❌", callback_data=f"group_delete_{group.id}")
+            )
+    builder.row(InlineKeyboardButton(text="Gurux qo'shish", callback_data="group_add"))
+    builder.row(InlineKeyboardButton(text="Ortga", callback_data="group_back"))
+    builder.adjust(3)
+    return builder.as_markup()
 
 
 async def districts_btn():
-    ikb = InlineKeyboardBuilder()
-    checks = await District.all()
-    for i in checks:
-        ikb.add(*[
-            InlineKeyboardButton(text=i.name, callback_data=f'district_text_{i.id}_{i.name}'),
-        ])
-    ikb.adjust(1)
-    return ikb.as_markup()
+    builder = InlineKeyboardBuilder()
+    districts = await District.all()
+    for district in districts:
+        builder.add(
+            InlineKeyboardButton(text=district.name, callback_data=f"district_text_{district.id}_{district.name}")
+        )
+    builder.adjust(1)
+    return builder.as_markup()
 
 
 async def districts_from_btn():
-    ikb = InlineKeyboardBuilder()
-    checks = await District.all()
-    for i in checks:
-        ikb.add(*[
-            InlineKeyboardButton(text=i.name, callback_data=f'distri_{i.id}_{i.name}'),
-        ])
-    ikb.adjust(1)
-    return ikb.as_markup()
+    builder = InlineKeyboardBuilder()
+    districts = await District.all()
+    for district in districts:
+        builder.add(
+            InlineKeyboardButton(text=district.name, callback_data=f"distri_{district.id}_{district.name}")
+        )
+    builder.adjust(1)
+    return builder.as_markup()
