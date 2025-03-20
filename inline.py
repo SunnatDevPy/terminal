@@ -69,11 +69,12 @@ async def bank_group_btn(bank_id):
         for i in checks:
             ikb.add(*[
                 InlineKeyboardButton(text=i.bank_name, callback_data=f'group_text_{i.id}'),
+                InlineKeyboardButton(text=i.group_id, callback_data=f'group_text_{i.id}'),
                 InlineKeyboardButton(text="❌", callback_data=f'group_delete_{i.id}'),
             ])
     ikb.row(InlineKeyboardButton(text=f"Gurux qo'shish", callback_data=f'group_add'))
     ikb.row(InlineKeyboardButton(text="Ortga", callback_data=f'group_back'))
-    ikb.adjust(2)
+    ikb.adjust(3)
     return ikb.as_markup()
 
 
