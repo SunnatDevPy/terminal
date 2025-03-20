@@ -2,7 +2,7 @@
 # from fastapi import FastAPI, WebSocket
 # from starlette.websockets import WebSocketDisconnect
 #
-# from bot import bot
+from bot import bot
 # from config import clients
 #
 # app = FastAPI()
@@ -58,7 +58,6 @@ from config import clients
 app = FastAPI()
 
 
-# === 1. ОБРАБОТКА WEBSOCKET ===
 @app.websocket("/ws/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
     await websocket.accept()
@@ -79,14 +78,26 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
 # === 2. WEBHOOK для отправки сообщений на устройство ===
 @app.post("/webhook")
 async def webhook(data: dict):
+    # Извлекаем device_id из входящих данных
     device_id = data.get("device_id")
-    message = json.dumps(data)
+
+    # Формируем структурированный payload
+    payload = {
+        "device_id": device_id,
+        "action": data.get("action", "default_action"),  # Например, "PAYMENT" или другой тип команды
+        "params": data.get("params", {})  # Дополнительные параметры команды
+    }
+
+    # Преобразуем словарь в JSON-строку
+    message = json.dumps(payload)
+
+    # Если устройство подключено (есть в clients), отправляем сообщение
     if device_id in clients:
         await clients[device_id].send_text(message)
         print(f"✅ Сообщение отправлено устройству {device_id}: {message}")
         return {"status": "sent"}
-    return {"error": "device not connected"}
 
+    return {"error": "device not connected"}
 
 # === 3. API для просмотра подключенных устройств ===
 @app.get("/devices")
