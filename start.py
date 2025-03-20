@@ -8,7 +8,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 
 from config import clients
-from inline import menu, checks_btn, district_btn, districts_from_btn, districts_btn
+from inline import menu, checks_btn, district_btn, districts_from_btn, districts_btn, bank_btn
 from models import BotUser, Check
 from models import Tickets
 from models.users import District, GroupFromBank
@@ -52,7 +52,7 @@ async def command_start(call: CallbackQuery):
     elif data == "district":
         await call.message.edit_text("Tumanlar", reply_markup=await district_btn())
     elif data == "bank":
-        await call.message.edit_text("Banklar", reply_markup=await district_btn())
+        await call.message.edit_text("Banklar", reply_markup=await bank_btn())
 
 
 class TextState(StatesGroup):
@@ -164,24 +164,24 @@ async def handle_message(message: Message, bot: Bot):
     checks = await Check.all()
 
     # Для каждой группы и каждого устройства, если устройство упоминается в тексте
-    # for group in bank_groups:
-    for check in checks:
-        if check.device in text:
-            # await Tickets.create(
-            #     text=message.text,
-            #     check=check.device,
-            #     check_id=group.id,
-            #     district_id=group.district_id,
-            #     district=group.district
-            # )
-            data = {"device_id": check.device, "action": "PAYMENT", "amount": check.device}
-            print("Формируем данные для отправки на устройство:", data)
-            if check.device in clients:
-                try:
-                    await clients[check.device].send_text(json.dumps(data))
-                    await bot.send_message(5649321700, f"Подключенные устройства:, {clients}")
-                    print(f"🚀 Данные отправлены на терминал {check.device}: {data}")
-                except Exception as e:
-                    print(f"⚠ Ошибка при отправке данных на терминал {check.device}: {e}")
-            else:
-                print(f"❌ Терминал {check.device} не подключен!")
+    for group in bank_groups:
+        for check in checks:
+            if check.device in text:
+                await Tickets.create(
+                    text=message.text,
+                    check=check.device,
+                    check_id=group.id,
+                    district_id=group.district_id,
+                    district=group.district
+                )
+                data = {"device_id": check.device, "action": "PAYMENT", "amount": check.device}
+                print("Формируем данные для отправки на устройство:", data)
+                if check.device in clients:
+                    try:
+                        await clients[check.device].send_text(json.dumps(data))
+                        await bot.send_message(5649321700, f"Подключенные устройства:, {clients}")
+                        print(f"🚀 Данные отправлены на терминал {check.device}: {data}")
+                    except Exception as e:
+                        print(f"⚠ Ошибка при отправке данных на терминал {check.device}: {e}")
+                else:
+                    print(f"❌ Терминал {check.device} не подключен!")
