@@ -23,7 +23,7 @@ async def checks_btn():
     if checks:
         for i in checks:
             ikb.add(*[
-                InlineKeyboardButton(text=i.text, callback_data=f'check_text_{i.id}'),
+                InlineKeyboardButton(text=i.device, callback_data=f'check_text_{i.id}'),
                 InlineKeyboardButton(text="❌", callback_data=f'check_delete_{i.id}'),
             ])
     ikb.row(InlineKeyboardButton(text="Check qo'shish", callback_data=f'check_add'))
