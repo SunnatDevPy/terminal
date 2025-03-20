@@ -1,6 +1,4 @@
-from starlette.routing import Router
-
-from aiogram import F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
@@ -19,7 +17,7 @@ class GroupState(StatesGroup):
     text = State()
 
 
-@start_router.callback_query(F.data.startswith('bank_'))
+@bank_router.callback_query(F.data.startswith('bank_'))
 async def command_start(call: CallbackQuery, state: FSMContext):
     bank_data = call.data.split("_")
     if bank_data[1] == 'text':
@@ -36,14 +34,14 @@ async def command_start(call: CallbackQuery, state: FSMContext):
         await call.message.edit_text(f"Bosh menu", reply_markup=await menu())
 
 
-@start_router.message(BankState.text)
+@bank_router.message(BankState.text)
 async def command_start(message: Message, state: FSMContext):
     await BankName.create(name=message.text)
     await message.answer(f"Banklar", reply_markup=await bank_btn())
     await state.clear()
 
 
-@start_router.callback_query(F.data.startswith("group_"))
+@bank_router.callback_query(F.data.startswith("group_"))
 async def command_start(call: CallbackQuery, state: FSMContext):
     data = call.data.split('_')
     res = await state.get_data()
@@ -70,7 +68,7 @@ async def command_start(call: CallbackQuery, state: FSMContext):
             await call.message.answer("Banklar", reply_markup=await bank_btn())
 
 
-@start_router.message(GroupState.text)
+@bank_router.message(GroupState.text)
 async def command_start(message: Message, state: FSMContext):
     res = await state.get_data()
     bank_id, bank_name = res.get('bank_id'), res.get('bank_name')
