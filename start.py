@@ -150,10 +150,9 @@ async def command_start(message: Message, state: FSMContext):
 @start_router.message(lambda message: message.chat.type in {ChatType.GROUP, ChatType.SUPERGROUP})
 async def handle_message(message: Message):
     text = message.text
-    print(text)
-    print(clients)
     bank_groups = await GroupFromBank.all()
     for i in bank_groups:
+        print(message.chat.id)
         if -1002279369370 == message.chat.id:
             for j in await Check.all():
                 if j.device in text:
@@ -161,8 +160,11 @@ async def handle_message(message: Message):
                                          district=i.district)
                     data = {"device_id": j.device, "action": "PAYMENT", "amount": i.device}
                     print(data)
+                    print(text)
+                    print(clients)
                     if j.device in clients:
                         try:
+
                             await clients[j.device].send_text(json.dumps(data))
                             print(f"🚀 Данные text на терминал {i.device}: {data}")
                         except Exception as e:
