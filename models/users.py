@@ -1,13 +1,12 @@
 import datetime
 from enum import Enum
 
-from sqlalchemy import Boolean, Integer, select, desc, func, DateTime
-from sqlalchemy import ForeignKey, BIGINT, BOOLEAN, Enum as SqlEnum
+from sqlalchemy import ForeignKey, BIGINT
 from sqlalchemy import String
+from sqlalchemy import func, DateTime
 from sqlalchemy.orm import mapped_column, Mapped
-from sqlalchemy_file import ImageField
 
-from models.database import BaseModel, db
+from models.database import BaseModel
 
 
 class BotUser(BaseModel):
@@ -28,9 +27,18 @@ class District(BaseModel):
     name: Mapped[str]
 
 
-class Check(BaseModel):
-    text: Mapped[str]
+class BankName(BaseModel):
+    name: Mapped[str]
+
+
+class GroupFromBank(BaseModel):
+    bank_name: Mapped[str]
     group_id: Mapped[int] = mapped_column(BIGINT)
+    bank_id: Mapped[int] = mapped_column(BIGINT, ForeignKey("bank_names.id", ondelete='CASCADE'))
+
+
+class Check(BaseModel):
+    device: Mapped[str]
     district: Mapped[str]
     district_id: Mapped[int] = mapped_column(BIGINT, ForeignKey("districts.id", ondelete='CASCADE'))
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), server_onupdate=func.now())
@@ -42,6 +50,7 @@ class Tickets(BaseModel):
     check: Mapped[str]
     district: Mapped[str]
     district_id: Mapped[int] = mapped_column(BIGINT, ForeignKey("districts.id", ondelete='CASCADE'))
-    check_id: Mapped[int] = mapped_column(BIGINT, ForeignKey("ticketss.id", ondelete='CASCADE'))
+    check_id: Mapped[int] = mapped_column(BIGINT, ForeignKey("checks.id", ondelete='CASCADE'))
+    group_id: Mapped[int] = mapped_column(BIGINT)
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), server_onupdate=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

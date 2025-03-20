@@ -8,10 +8,10 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 
 from config import clients
-from inline import menu, checks_btn, district_btn, districts_btn, districts_from_btn
+from inline import menu, checks_btn, district_btn, districts_from_btn, districts_btn
 from models import BotUser, Check
 from models import Tickets
-from models.users import District
+from models.users import District, GroupFromBank
 
 start_router = Router()
 
@@ -48,9 +48,11 @@ async def command_start(call: CallbackQuery):
     if data == 'text':
         await call.message.edit_text("Xabarlarni tuman bo'yicha qidiruv", reply_markup=await districts_btn())
     elif data == "check":
-        await call.message.edit_text("Check qidiruv so'zlar", reply_markup=await checks_btn())
+        await call.message.edit_text("Chip qidiruv so'zlar", reply_markup=await checks_btn())
     elif data == "district":
         await call.message.edit_text("Tumanlar", reply_markup=await district_btn())
+    elif data == "bank":
+        await call.message.edit_text("Banklar", reply_markup=await district_btn())
 
 
 class TextState(StatesGroup):
@@ -70,15 +72,15 @@ async def command_start(call: CallbackQuery, state: FSMContext):
         try:
             await Check.delete(int(data[-1]))
             try:
-                await call.message.edit_text("Qidiruv check so'zlar", reply_markup=await checks_btn())
+                await call.message.edit_text("Qidiruv chip so'zlar", reply_markup=await checks_btn())
             except:
-                await call.message.answer("Qidiruv check so'zlar", reply_markup=await checks_btn())
+                await call.message.answer("Qidiruv chip so'zlar", reply_markup=await checks_btn())
         except:
             await call.message.answer("O'chirishda xatolik", reply_markup=await checks_btn())
     elif data[1] == 'add':
         await call.message.delete()
         await state.set_state(TextState.text)
-        await call.message.answer("Yangi check text kiriting")
+        await call.message.answer("Yangi chiq devays nomini kiriting ⚠")
     elif data[1] == 'back':
         try:
             await call.message.edit_text("Bosh menu", reply_markup=menu())
@@ -88,16 +90,9 @@ async def command_start(call: CallbackQuery, state: FSMContext):
 
 @start_router.message(TextState.text)
 async def command_start(message: Message, state: FSMContext):
-    await state.update_data(text=message.text)
-    await state.set_state(TextState.group_id)
-    await message.answer("Gurux id kiriting, id shu botdan olasiz: @getidallbot")
-
-
-@start_router.message(TextState.group_id)
-async def command_start(message: Message, state: FSMContext):
-    await state.update_data(group_id=message.text)
+    await state.update_data(device=message.text)
     await state.set_state(TextState.district)
-    await message.answer("Tumanlardan birini tanlang", reply_markup=await districts_from_btn())
+    await message.answer("Tuman belgilang", reply_markup=await districts_from_btn())
 
 
 @start_router.callback_query(TextState.district)
@@ -106,7 +101,9 @@ async def command_start(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
     res = await state.get_data()
     print(res)
-    await Check.create(text=res.get('text'), group_id=int(res.get('group_id')), district_id=int(data[1]),
+    await Check.create(device=res.get('device'), owner_name=res.get('owner_name'),
+                       acceptance_group_id=int(res.get('acceptance_group_id')),
+                       send_group_id=int(res.get('send_group_id')), district_id=int(data[1]),
                        district=data[-1])
     await state.clear()
     await call.message.answer("Chek yaratildi", reply_markup=await checks_btn())
@@ -158,19 +155,20 @@ async def handle_message(message: Message):
     text = message.text
     print(text)
     print(clients)
-    checks: list["Check"] = await Check.all()
-    for i in checks:
-        if i.group_id == message.chat.id:
-            if i.text in text:
-                await Tickets.create(text=message.text, check=i.text, check_id=i.id, district_id=i.district_id,
-                                     district=i.district)
-                data = {"device_id": str(i.text), "action": "PAYMENT", "amount": i.text}
-
-                if str(i.text) in clients:
-                    try:
-                        await clients[str(i.text)].send_text(json.dumps(data))
-                        print(f"🚀 Данные text на терминал {i.text}: {data}")
-                    except Exception as e:
-                        print(f"⚠ Ошибка district_id при отправке данных на терминал {i.text}: {e}")
-                else:
-                    print(f"❌ Терминал {i.text} не подключен!")
+    bank_groups = await GroupFromBank.all()
+    for i in bank_groups:
+        if -1002279369370 == message.chat.id:
+            for j in await Check.all():
+                if j.device in text:
+                    await Tickets.create(text=message.text, check=j.device, check_id=i.id, district_id=i.district_id,
+                                         district=i.district)
+                    data = {"device_id": j.device, "action": "PAYMENT", "amount": i.device}
+                    print(data)
+                    if j.device in clients:
+                        try:
+                            await clients[j.device].send_text(json.dumps(data))
+                            print(f"🚀 Данные text на терминал {i.device}: {data}")
+                        except Exception as e:
+                            print(f"⚠ Ошибка device_id при отправке данных на терминал {i.device}: {e}")
+                    else:
+                        print(f"❌ Терминал {i.device} не подключен!")
