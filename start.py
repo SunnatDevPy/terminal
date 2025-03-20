@@ -151,8 +151,9 @@ async def command_start(message: Message, state: FSMContext):
 async def handle_message(message: Message):
     text = message.text
     bank_groups = await GroupFromBank.all()
+    print(message.chat.id)
+    print(1)
     for i in bank_groups:
-        print(message.chat.id)
         if -1002279369370 == message.chat.id:
             for j in await Check.all():
                 if j.device in text:
