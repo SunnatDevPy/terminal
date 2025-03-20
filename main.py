@@ -8,7 +8,7 @@ from config import clients
 app = FastAPI()
 
 
-# === WebSocket соединение для устройств ===
+# === WebSocket-соединение для устройств ===
 @app.websocket("/ws/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
     await websocket.accept()
@@ -18,17 +18,23 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
     try:
         while True:
             message = await websocket.receive_text()
-            print(f"📩 Получено от {device_id}: {message}")
+            if message == "ping":
+                print(f"🔄 Пинг от {device_id}")
+                continue
 
-            # Отправляем сообщение в Telegram-бота
+            print(f"📩 Получено от {device_id}: {message}")
             await bot.send_message(chat_id=5649321700, text=f"Сообщение от {device_id}: {message}")
 
     except WebSocketDisconnect:
         print(f"❌ Устройство {device_id} отключилось")
         clients.pop(device_id, None)
 
+    except Exception as e:
+        print(f"⚠️ Ошибка WebSocket {device_id}: {e}")
+        clients.pop(device_id, None)
 
-# === API для отправки команд на устройства ===
+
+# === API для отправки команд устройствам ===
 @app.post("/webhook")
 async def webhook(data: dict):
     device_id = data.get("device_id")
