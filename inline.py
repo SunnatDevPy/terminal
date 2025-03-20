@@ -68,7 +68,7 @@ async def bank_group_btn(bank_id):
     if checks:
         for i in checks:
             ikb.add(*[
-                InlineKeyboardButton(text=i.name, callback_data=f'group_text_{i.id}'),
+                InlineKeyboardButton(text=i.bank_name, callback_data=f'group_text_{i.id}'),
                 InlineKeyboardButton(text="❌", callback_data=f'group_delete_{i.id}'),
             ])
     ikb.row(InlineKeyboardButton(text=f"Gurux qo'shish", callback_data=f'group_add'))
